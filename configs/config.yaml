@@ -1,0 +1,494 @@
+# ============================================================================
+# DetectVoice - Configuration File
+# Audio Deepfake Detection Suite
+# ============================================================================
+
+# Project Settings
+project:
+  name: "DetectVoice"
+  version: "2.0.0"
+  description: "Multi-model Audio Deepfake Detection Suite with Adversarial Robustness"
+  seed: 42
+
+# Data Settings
+data:
+  # Audio processing parameters
+  sample_rate: 16000
+  duration: 3.0  # seconds
+  mono: true
+
+  # Feature extraction
+  features:
+    n_fft: 2048
+    hop_length: 512
+    n_mels: 128
+    n_mfcc: 40
+    fmin: 0
+    fmax: 8000
+
+  # Paths
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  datasets_dir: "data/datasets"
+
+  # Dataset splits
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+
+  # Data augmentation
+  augmentation:
+    enabled: true
+    prob_noise: 0.3
+    prob_gain: 0.3
+    prob_time_stretch: 0.2
+    prob_pitch_shift: 0.2
+    noise_snr_db: [10, 30]
+    gain_range: [0.7, 1.3]
+    time_stretch_rate: [0.9, 1.1]
+    pitch_shift_steps: [-2, 2]
+
+# Model Categories
+models:
+  # Classical ML Models
+  classical:
+    enabled: true
+    models:
+      - svm
+      - xgboost
+      - random_forest
+      - logistic_regression
+
+    svm:
+      kernel: "rbf"
+      C: 1.0
+      gamma: "scale"
+
+    xgboost:
+      n_estimators: 200
+      max_depth: 6
+      learning_rate: 0.1
+      subsample: 0.8
+      colsample_bytree: 0.8
+
+    random_forest:
+      n_estimators: 200
+      max_depth: 20
+      min_samples_split: 5
+      min_samples_leaf: 2
+
+    logistic_regression:
+      C: 1.0
+      max_iter: 1000
+      solver: "lbfgs"
+
+  # Deep Learning Models
+  deep_learning:
+    enabled: true
+    models:
+      - cnn_1d
+      - cnn_2d
+      - crnn
+      - lstm
+      - bilstm
+      - gru
+      - bigru
+
+    cnn_1d:
+      in_channels: 1
+      channels: [64, 128, 256, 512]
+      kernel_sizes: [3, 3, 3, 3]
+      dropout: 0.5
+
+    cnn_2d:
+      in_channels: 1
+      channels: [64, 128, 256, 512]
+      kernel_size: [3, 3]
+      dropout: 0.5
+
+    crnn:
+      cnn_channels: [64, 128, 256]
+      rnn_hidden: 256
+      rnn_layers: 2
+      bidirectional: true
+      dropout: 0.5
+
+    lstm:
+      hidden_size: 256
+      num_layers: 3
+      bidirectional: false
+      dropout: 0.3
+
+    bilstm:
+      hidden_size: 256
+      num_layers: 3
+      bidirectional: true
+      dropout: 0.3
+
+    gru:
+      hidden_size: 256
+      num_layers: 3
+      bidirectional: false
+      dropout: 0.3
+
+    bigru:
+      hidden_size: 256
+      num_layers: 3
+      bidirectional: true
+      dropout: 0.3
+
+  # Transformer Models
+  transformers:
+    enabled: true
+    models:
+      - wav2vec2
+      - hubert
+      - ast
+
+    wav2vec2:
+      pretrained_model: "facebook/wav2vec2-base"
+      freeze_feature_encoder: true
+      freeze_layers: 6  # Freeze first 6 transformer layers
+      hidden_dropout: 0.1
+      attention_dropout: 0.1
+      classifier_hidden: 256
+
+    hubert:
+      pretrained_model: "facebook/hubert-base-ls960"
+      freeze_feature_encoder: true
+      freeze_layers: 6
+      hidden_dropout: 0.1
+      attention_dropout: 0.1
+      classifier_hidden: 256
+
+    ast:
+      pretrained_model: "MIT/ast-finetuned-audioset-10-10-0.4593"
+      freeze_base: true
+      hidden_size: 768
+      num_attention_heads: 12
+      num_hidden_layers: 12
+      classifier_hidden: 256
+
+  # Advanced Specialized Models
+  advanced:
+    enabled: true
+    models:
+      - ecapa_tdnn
+      - resnet_audio
+      - quartznet
+      - conformer
+      - harmonic_cnn
+
+    ecapa_tdnn:
+      channels: 1024
+      emb_dim: 192
+      attention_channels: 128
+      res2net_scale: 8
+      se_channels: 128
+      global_context: true
+
+    resnet_audio:
+      block_type: "bottleneck"
+      layers: [3, 4, 6, 3]  # ResNet-50
+      in_channels: 1
+      base_width: 64
+
+    quartznet:
+      blocks: [
+        {filters: 256, repeat: 5, kernel_size: 33},
+        {filters: 256, repeat: 5, kernel_size: 39},
+        {filters: 512, repeat: 5, kernel_size: 51},
+        {filters: 512, repeat: 5, kernel_size: 63},
+        {filters: 512, repeat: 5, kernel_size: 75}
+      ]
+      dropout: 0.2
+
+    conformer:
+      encoder_dim: 256
+      num_layers: 16
+      num_attention_heads: 4
+      feed_forward_expansion_factor: 4
+      conv_expansion_factor: 2
+      input_dropout_p: 0.1
+      feed_forward_dropout_p: 0.1
+      attention_dropout_p: 0.1
+      conv_dropout_p: 0.1
+      conv_kernel_size: 31
+
+    harmonic_cnn:
+      harmonic_layers: [64, 128, 256]
+      temporal_layers: [256, 512]
+      num_harmonics: 8
+      dropout: 0.5
+
+  # Generative/Anomaly Detection Models
+  generative:
+    enabled: true
+    models:
+      - autoencoder
+      - vae
+      - siamese
+      - specgan_detector
+      - wavegan_detector
+
+    autoencoder:
+      encoder_dims: [128, 64, 32, 16]
+      latent_dim: 8
+      decoder_dims: [16, 32, 64, 128]
+
+    vae:
+      encoder_dims: [128, 64, 32]
+      latent_dim: 16
+      decoder_dims: [32, 64, 128]
+      beta: 1.0
+
+    siamese:
+      embedding_dim: 128
+      margin: 1.0
+      distance_metric: "euclidean"
+
+    specgan_detector:
+      discriminator_type: "multiscale"
+      channels: [64, 128, 256, 512]
+
+    wavegan_detector:
+      discriminator_type: "patchgan"
+      patch_size: 64
+
+# Ensemble Settings
+ensemble:
+  enabled: true
+  strategy: "stacking"  # Options: averaging, weighted_voting, stacking, jury
+
+  # Model weights for weighted voting (if strategy = weighted_voting)
+  weights:
+    wav2vec2: 0.25
+    ecapa_tdnn: 0.20
+    resnet_audio: 0.15
+    xgboost: 0.15
+    cnn_2d: 0.10
+    bilstm: 0.10
+    harmonic_cnn: 0.05
+
+  # Jury system (requires N models to agree)
+  jury:
+    min_agreement: 3
+    confidence_threshold: 0.7
+
+  # Stacking meta-model
+  stacking:
+    meta_model: "xgboost"
+    use_proba: true
+    cv_folds: 5
+
+# Training Settings
+training:
+  # General
+  batch_size: 32
+  epochs: 100
+  num_workers: 4
+  pin_memory: true
+
+  # Optimization
+  optimizer: "adamw"
+  learning_rate: 0.0001
+  weight_decay: 0.01
+
+  # Learning rate scheduler
+  scheduler:
+    type: "cosine_annealing"  # Options: cosine_annealing, reduce_on_plateau, step
+    T_max: 100
+    eta_min: 0.000001
+
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 15
+    min_delta: 0.001
+    monitor: "val_loss"
+
+  # Checkpointing
+  checkpoint:
+    save_best: true
+    save_last: true
+    save_top_k: 3
+    monitor: "val_f1"
+    mode: "max"
+
+  # Mixed precision training
+  mixed_precision: true
+
+  # Gradient clipping
+  gradient_clip_val: 1.0
+
+  # Adversarial training
+  adversarial:
+    enabled: false
+    attack_types: ["fgsm", "pgd"]
+    epsilon: 0.03
+    adv_ratio: 0.3
+
+# Evaluation Metrics
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+    - roc_auc
+    - eer
+    - confusion_matrix
+    - det_curve
+
+  # Threshold optimization
+  optimize_threshold: true
+  threshold_metric: "f1"
+
+  # Cross-validation
+  cross_validation:
+    enabled: false
+    n_folds: 5
+    stratified: true
+
+# Visualization Settings
+visualization:
+  enabled: true
+  save_format: "png"
+  dpi: 300
+
+  plots:
+    - training_curves
+    - roc_curve
+    - pr_curve
+    - confusion_matrix
+    - det_curve
+    - spectrogram_samples
+    - mfcc_visualization
+    - embedding_projector
+    - feature_importance
+
+  # t-SNE/UMAP settings
+  embedding_viz:
+    method: "umap"  # Options: tsne, umap
+    n_components: 2
+    perplexity: 30  # For t-SNE
+    n_neighbors: 15  # For UMAP
+
+# Logging and Tracking
+logging:
+  # TensorBoard
+  tensorboard:
+    enabled: true
+    log_dir: "outputs/logs/tensorboard"
+
+  # MLflow
+  mlflow:
+    enabled: true
+    experiment_name: "detectvoice_experiments"
+    tracking_uri: "outputs/logs/mlruns"
+
+  # Console logging
+  console:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+  # File logging
+  file:
+    enabled: true
+    level: "DEBUG"
+    log_dir: "outputs/logs"
+
+# Datasets Configuration
+datasets:
+  # Deepfake datasets
+  asvspoof2019:
+    url: "https://datashare.ed.ac.uk/handle/10283/3336"
+    protocols: ["LA", "PA"]  # Logical Access, Physical Access
+
+  asvspoof2021:
+    url: "https://www.asvspoof.org/index2021.html"
+    protocols: ["LA", "DF"]  # Logical Access, Deepfake
+
+  fakeavceleb:
+    url: "https://github.com/DASH-Lab/FakeAVCeleb"
+
+  wavefake:
+    url: "https://zenodo.org/record/5642694"
+
+  for_dataset:
+    url: "https://bil.eecs.yorku.ca/datasets/"
+
+  add2022:
+    url: "https://github.com/Jungjee/ADD2022"
+
+  # Real voice datasets
+  librispeech:
+    url: "https://www.openslr.org/12"
+    subsets: ["train-clean-100", "dev-clean", "test-clean"]
+
+  common_voice:
+    url: "https://commonvoice.mozilla.org/"
+    version: "11.0"
+    language: "en"
+
+  voxceleb1:
+    url: "https://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1.html"
+
+  voxceleb2:
+    url: "https://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox2.html"
+
+  # TTS/AI voice datasets
+  coqui_tts:
+    samples_url: "https://github.com/coqui-ai/TTS"
+
+  elevenlabs:
+    demo_dataset: "manual_download"
+
+  larynx_tts:
+    url: "https://github.com/rhasspy/larynx"
+
+  bark_audio:
+    url: "https://github.com/suno-ai/bark"
+
+# Export Settings
+export:
+  formats:
+    - pytorch
+    - torchscript
+    - onnx
+
+  onnx:
+    opset_version: 14
+    dynamic_axes: true
+
+  quantization:
+    enabled: false
+    method: "dynamic"  # Options: dynamic, static
+
+# Inference Settings
+inference:
+  batch_size: 1
+  device: "cuda"  # Options: cuda, cpu, mps
+  use_fp16: false
+
+  # Real-time processing
+  real_time:
+    enabled: false
+    chunk_duration: 1.0
+    overlap: 0.5
+
+# Paths
+paths:
+  data_dir: "data"
+  outputs_dir: "outputs"
+  models_dir: "outputs/models"
+  plots_dir: "outputs/plots"
+  logs_dir: "outputs/logs"
+  weights_dir: "weights"
+  experiments_dir: "experiments"
+
+# Hardware Settings
+hardware:
+  device: "cuda"  # Options: cuda, cpu, mps
+  gpu_ids: [0]
+  num_workers: 4
+  prefetch_factor: 2
